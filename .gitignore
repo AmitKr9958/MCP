@@ -13,9 +13,3 @@ test-results/
 jobs/status.json
 resume/tailored/*.pdf
 resume/tailored/*.txt
-profile.json
-jobs.json
-9router-models.json
-JOB POSTING.xlsx
-*.backup
-*.backup2

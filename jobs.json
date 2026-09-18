@@ -1,0 +1,32 @@
+[
+  {
+    "id": "job-001",
+    "url": "https://careers.unitedhealthgroup.com/job/noida/business-analyst/34088/99517027200",
+    "title": "Business Analyst",
+    "notes": "UnitedHealth Group | Noida | Match: 95% | US Healthcare RCM, Power BI, Data Modeling, SQL, Advanced Excel, MIS Reporting"
+  },
+  {
+    "id": "job-002",
+    "url": "https://fiserv.wd5.myworkdayjobs.com/en-US/EXT/job/Business-Systems-Analysis---Professional-II_R-10399136-1",
+    "title": "Business Systems Analysis - Professional II",
+    "notes": "Fiserv | Remote - India / Hybrid | Match: 94% | Power BI, DAX, Power Query, Paginated Reports, RLS, Data Modeling, SQL, KPI Design"
+  },
+  {
+    "id": "job-003",
+    "url": "https://pwc.wd3.myworkdayjobs.com/en-US/global_experienced_careers/job/gurugram-10-c/in-manager-power-bi-data-and-analytics-advisory-gurgaon_747387wd-1",
+    "title": "IN-Manager - Power BI - Data and Analytics Advisory",
+    "notes": "PwC | Gurugram | Match: 92% | Power BI, Data Analytics, Semantic Modelling, DAX, Advisory, Team Leadership"
+  },
+  {
+    "id": "job-004",
+    "url": "https://careers.spglobal.com/jobs/327572?lang=en-us",
+    "title": "Lead Business Intelligence Engineer",
+    "notes": "S&P Global | Noida | Match: 91% | BI Architecture, Semantic Layer, Data Modeling, Medallion Architecture, SQL, ETL/ELT"
+  },
+  {
+    "id": "job-005",
+    "url": "https://genpact.wd108.myworkdayjobs.com/en-US/External_Careers/job/Sr-Analyst---BI--Reporting-and-Data-Visualization-4B_JR10014708",
+    "title": "Sr. Analyst - BI, Reporting and Data Visualization",
+    "notes": "Genpact | Gurugram / Noida / Remote India | Match: 90% | Power BI, DAX, Power Query, Data Modeling, RLS, ETL, Azure Data Services"
+  }
+]

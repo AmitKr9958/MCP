@@ -1,0 +1,118 @@
+import { Page } from "playwright";
+import fs from "fs";
+import path from "path";
+import { LLM } from "./llm.js";
+import { AnalyzedJD, Job } from "./types.js";
+
+/**
+ * Extract the most likely job description text from the page.
+ * Uses a set of common selectors + fallback to body text.
+ */
+export async function extractJobDescription(page: Page): Promise<string> {
+  const selectors = [
+    '[class*="job-description"]',
+    '[class*="jobDescription"]',
+    '[class*="description"]',
+    '[data-testid*="description"]',
+    '[id*="job-description"]',
+    "article",
+    '[role="main"]',
+    "main",
+    ".content",
+    "#content",
+  ];
+
+  for (const sel of selectors) {
+    try {
+      const el = page.locator(sel).first();
+      if ((await el.count()) > 0) {
+        const text = await el.innerText({ timeout: 2000 });
+        if (text && text.length > 200) {
+          return cleanText(text);
+        }
+      }
+    } catch {
+      // continue
+    }
+  }
+
+  // Fallback: whole body (will be noisy but LLM can still extract)
+  const body = await page.locator("body").innerText();
+  return cleanText(body);
+}
+
+function cleanText(text: string): string {
+  return text
+    .replace(/\r\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/[ \t]+/g, " ")
+    .trim()
+    .slice(0, 15000); // keep prompt size reasonable
+}
+
+export async function analyzeJD(
+  llm: LLM,
+  rawText: string,
+  job: Job
+): Promise<AnalyzedJD> {
+  const prompt = `You are an expert technical recruiter and ATS specialist.
+Analyze the following job description and return a strict JSON object with these exact keys:
+
+{
+  "requiredSkills": string[],       // must-have technical & soft skills
+  "preferredSkills": string[],      // nice-to-have skills
+  "keywords": string[],             // important ATS keywords / phrases (max 25)
+  "experienceYears": number | null, // minimum years if mentioned
+  "summary": string                 // 2-3 sentence neutral summary of the role
+}
+
+Rules:
+- Be precise. Only include skills actually mentioned or strongly implied.
+- Keywords should be the exact phrases that would help pass ATS filters.
+- If years of experience are not mentioned, set experienceYears to null.
+- Return ONLY valid JSON, no markdown, no commentary.
+
+Job Title (if known): ${job.title || "Unknown"}
+Job Notes: ${job.notes || "None"}
+
+JOB DESCRIPTION:
+"""
+${rawText}
+"""`;
+
+  const response = await llm.chat(
+    [
+      { role: "system", content: "You output only valid JSON." },
+      { role: "user", content: prompt },
+    ],
+    { temperature: 0.2, json: true }
+  );
+
+  let parsed: AnalyzedJD;
+  try {
+    parsed = JSON.parse(response);
+  } catch {
+    // One retry with a stricter reminder
+    const retry = await llm.chat(
+      [
+        { role: "system", content: "You output only valid JSON. No other text." },
+        { role: "user", content: prompt },
+      ],
+      { temperature: 0.1, json: true }
+    );
+    parsed = JSON.parse(retry);
+  }
+
+  parsed.rawTextPreview = rawText.slice(0, 500);
+  return parsed;
+}
+
+export function saveAnalysis(
+  analyzedDir: string,
+  jobId: string,
+  analysis: AnalyzedJD
+): string {
+  const filePath = path.join(analyzedDir, `${jobId}.json`);
+  fs.writeFileSync(filePath, JSON.stringify(analysis, null, 2), "utf-8");
+  return filePath;
+}

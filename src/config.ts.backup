@@ -1,0 +1,98 @@
+import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
+import { AppConfig, Job, Profile } from "./types.js";
+
+dotenv.config();
+
+const ROOT = path.resolve(process.cwd());
+
+export function loadConfig(): AppConfig {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      "OPENROUTER_API_KEY is missing. Copy .env.example to .env and add your key."
+    );
+  }
+
+  const model =
+    process.env.OPENROUTER_MODEL || "google/gemini-2.0-flash-001";
+
+  const jobsPath = path.join(ROOT, "jobs.json");
+  const profilePath = path.join(ROOT, "profile.json");
+  const masterResumePath = path.join(ROOT, "resume", "master.md");
+
+  if (!fs.existsSync(jobsPath)) throw new Error("jobs.json not found");
+  if (!fs.existsSync(profilePath)) throw new Error("profile.json not found");
+  if (!fs.existsSync(masterResumePath))
+    throw new Error("resume/master.md not found");
+
+  const jobs: Job[] = JSON.parse(fs.readFileSync(jobsPath, "utf-8"));
+  const profile: Profile = JSON.parse(fs.readFileSync(profilePath, "utf-8"));
+  const masterResume = fs.readFileSync(masterResumePath, "utf-8");
+
+  // Ensure output directories exist
+  const analyzedDir = path.join(ROOT, "jobs", "analyzed");
+  const tailoredDir = path.join(ROOT, "resume", "tailored");
+  const statusFile = path.join(ROOT, "jobs", "status.json");
+  fs.mkdirSync(analyzedDir, { recursive: true });
+  fs.mkdirSync(tailoredDir, { recursive: true });
+
+  return {
+    apiKey,
+    model,
+    jobs,
+    profile,
+    masterResume,
+    paths: {
+      root: ROOT,
+      analyzedDir,
+      tailoredDir,
+      statusFile,
+    },
+  };
+}
+
+export function parseCliArgs(argv: string[]): import("./types.js").CliOptions {
+  const opts: import("./types.js").CliOptions = {};
+  for (let i = 2; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === "--status" || arg === "-s") {
+      opts.statusOnly = true;
+    } else if (arg === "--help" || arg === "-h") {
+      opts.help = true;
+    } else if (arg === "--from" && argv[i + 1]) {
+      opts.fromId = argv[++i];
+    } else if (arg === "--retry" && argv[i + 1]) {
+      opts.retryId = argv[++i];
+    } else if (arg === "--skip" && argv[i + 1]) {
+      opts.skipId = argv[++i];
+    } else if (arg === "--resume" && argv[i + 1]) {
+      opts.resumeId = argv[++i];
+    }
+  }
+  return opts;
+}
+
+export function printHelp() {
+  console.log(`
+AI Job Application Agent
+
+Usage:
+  npm start                     Run pending jobs
+  npm start -- --status         Show status of all jobs
+  npm start -- --from <id>      Start from a specific job id
+  npm start -- --retry <id>     Force retry a job (even if completed)
+  npm start -- --skip <id>      Mark a job as skipped
+  npm start -- --resume <id>    Resume a failed/in-progress job from last checkpoint
+  npm start -- --help           Show this help
+
+Examples:
+  npm start -- --status
+  npm start -- --from job-002
+  npm start -- --retry job-001
+  npm start -- --skip job-003
+  npm start -- --resume job-001
+`);
+}
+
