@@ -1,0 +1,21 @@
+node_modules/
+dist/
+.env
+*.log
+.DS_Store
+jobs/analyzed/*
+!jobs/analyzed/.gitkeep
+resume/tailored/*
+!resume/tailored/.gitkeep
+playwright-report/
+test-results/
+.browser-data/
+jobs/status.json
+resume/tailored/*.pdf
+resume/tailored/*.txt
+profile.json
+jobs.json
+9router-models.json
+JOB POSTING.xlsx
+*.backup
+*.backup2

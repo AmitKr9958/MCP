@@ -1,0 +1,32 @@
+{
+  "name": "job-application-agent",
+  "version": "1.0.0",
+  "description": "Semi-automated AI job application agent – analyzes JD, tailors resume, fills forms, pauses before submit",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "ai",
+    "job",
+    "application",
+    "agent",
+    "playwright",
+    "openrouter"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "openai": "^4.73.0",
+    "playwright": "^1.49.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}
